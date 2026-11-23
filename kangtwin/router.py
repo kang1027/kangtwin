@@ -49,7 +49,7 @@ def route(update: Dict[str, Any], owner: Optional[int], interview: Dict[str, Any
     body = (msg.get("text") or "").strip()
 
     if owner is None or chat_id != owner:
-        if owner is None and pairing_code and hmac.compare_digest(body, "/start %s" % pairing_code):
+        if owner is None and pairing_code and hmac.compare_digest(body.encode("utf-8"), ("/start %s" % pairing_code).encode("utf-8")):
             return [("pair", {"chat_id": chat_id})]
         return []
 

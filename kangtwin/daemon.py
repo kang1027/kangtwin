@@ -113,8 +113,12 @@ def step(bot: Bot, spawn: Spawn = spawn_job, timeout: int = 50) -> bool:
         return False
     for update in updates:
         store.save("offset", {"next": update["update_id"] + 1})
-        actions = route(update, store.load("owner", {}).get("chat_id"), store.load("interview", {}),
-                        pair.current_code())
+        try:
+            actions = route(update, store.load("owner", {}).get("chat_id"), store.load("interview", {}),
+                            pair.current_code())
+        except Exception as e:  # 업데이트 하나가 이상해도 수신 루프는 계속 돈다.
+            log("업데이트 분류 실패: %r" % e)
+            continue
         for name, args in actions:
             try:
                 execute(bot, name, args, spawn)

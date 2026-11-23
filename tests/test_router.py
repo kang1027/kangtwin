@@ -27,6 +27,9 @@ class RouterTest(unittest.TestCase):
     def test_funds_command_runs_fund_scout(self):
         self.assertEqual(route(text(OWNER, "/funds"), OWNER, {}, None), [("fund_scout", {})])
 
+    def test_non_ascii_start_before_pairing_is_ignored(self):
+        self.assertEqual(route(text(5555, "/start 안녕"), None, {}, "Zq8-pairing-code"), [])
+
     def test_jobs_command_is_a_memo(self):
         self.assertEqual(route(text(OWNER, "/jobs"), OWNER, {}, None), [("memo", {"text": "/jobs"})])
 
