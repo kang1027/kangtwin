@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from typing import Any, Callable, Dict, List
 
-from . import config, heartbeat, remind, schedule, store
+from . import config, heartbeat, pair, remind, schedule, store
 from .router import route
 from .telegram import Bot, TelegramError
 
@@ -114,7 +114,7 @@ def step(bot: Bot, spawn: Spawn = spawn_job, timeout: int = 50) -> bool:
     for update in updates:
         store.save("offset", {"next": update["update_id"] + 1})
         actions = route(update, store.load("owner", {}).get("chat_id"), store.load("interview", {}),
-                        store.load("pairing", {}).get("code"))
+                        pair.current_code())
         for name, args in actions:
             try:
                 execute(bot, name, args, spawn)

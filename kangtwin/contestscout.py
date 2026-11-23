@@ -1,6 +1,7 @@
 """공모전 정찰과 초안. 공모전헌터 → 새 공모전 → 등급 → 기록·알림 → A 초안(하루 2건, 마감 가까운 순)."""
 import argparse
 import re
+import urllib.parse
 import subprocess
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -14,6 +15,14 @@ CARDS = 6
 SEEN_TTL = timedelta(days=120)
 VERDICTS = ["바로 낼 만함", "손 많이 감", "패스"]
 DRAFT_LENGTH = 2500
+
+def safe_url(url: str) -> bool:
+    """aside에 넘길 주소. http(s)만, 공백·줄바꿈·따옴표 없이. 주소에 지시문을 끼워 넣는 걸 막는다."""
+    parsed = urllib.parse.urlsplit(url)
+    return (parsed.scheme in ("http", "https") and bool(parsed.netloc) and len(url) <= 2000
+            and not re.search(r"[\s\"'<>`]", url))
+
+
 PROBE_PROMPT = (
     "읽기만 해. 가입, 로그인, 제출, 파일 다운로드, 아무 칸에 입력하는 것 금지.\n"
     "공모전 공고 %s 를 열어 이 공모전에 무엇을 어떻게 내야 하는지 읽어. 첨부 양식 이름과 문항은 화면에 보이는 만큼만 적어.\n"
@@ -295,6 +304,8 @@ class ContestScout:
         url = c.get("sourceUrl")
         if not url:
             return {}, "공고 원문 주소가 없음"
+        if not safe_url(url):
+            return {}, "공고 원문 주소가 http(s) 주소가 아님"
         try:
             form = llm.extract_json(self.aside(PROBE_PROMPT % url))
         except (llm.LLMError, OSError, subprocess.TimeoutExpired) as e:

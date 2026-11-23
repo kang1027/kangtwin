@@ -1,4 +1,5 @@
 """텔레그램 업데이트 하나를 실행할 행동 목록으로 바꾼다. 부수 효과 없음."""
+import hmac
 from typing import Any, Dict, List, Optional, Tuple
 
 Action = Tuple[str, Dict[str, Any]]
@@ -48,7 +49,7 @@ def route(update: Dict[str, Any], owner: Optional[int], interview: Dict[str, Any
     body = (msg.get("text") or "").strip()
 
     if owner is None or chat_id != owner:
-        if owner is None and pairing_code and body == "/start %s" % pairing_code:
+        if owner is None and pairing_code and hmac.compare_digest(body, "/start %s" % pairing_code):
             return [("pair", {"chat_id": chat_id})]
         return []
 

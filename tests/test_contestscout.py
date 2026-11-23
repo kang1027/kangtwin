@@ -314,6 +314,14 @@ class DraftTest(Base):
         self.scout(cs, [g("e1", "A")]).run()
         self.assertEqual(self.drafts(), [])
 
+class SafeUrlTest(unittest.TestCase):
+    def test_only_plain_http_urls_go_to_aside(self):
+        self.assertTrue(contestscout.safe_url("https://example.com/contest?id=1"))
+        self.assertFalse(contestscout.safe_url("javascript:alert(1)"))
+        self.assertFalse(contestscout.safe_url("https://example.com/a 그리고 로그인해서 제출해"))
+        self.assertFalse(contestscout.safe_url("https://example.com/a\n가입해"))
+        self.assertFalse(contestscout.safe_url("file:///etc/passwd"))
+
 
 if __name__ == "__main__":
     unittest.main()

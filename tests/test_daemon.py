@@ -4,7 +4,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from unittest import mock
 
-from kangtwin import daemon, heartbeat, store
+from kangtwin import config, daemon, heartbeat, store
 from kangtwin.telegram import TelegramError
 
 KST = timezone(timedelta(hours=9))
@@ -71,12 +71,19 @@ class DaemonTest(unittest.TestCase):
         self.assertIn("contest-scout", bot.sent[-1][1])
 
     def test_pairing_saves_owner_and_clears_code(self):
-        store.save("pairing", {"code": "482913"})
-        bot = FakeBot([text(5555, "/start 482913", 7)])
+        store.save("pairing", {"code": "Zq8-pairing-code", "at": config.now().isoformat()})
+        bot = FakeBot([text(5555, "/start Zq8-pairing-code", 7)])
         daemon.step(bot, spawn=self.spawn, timeout=0)
         self.assertEqual(store.load("owner", {}), {"chat_id": 5555})
         self.assertEqual(store.load("pairing", {}), {})
         self.assertEqual(bot.sent[-1][0], 5555)
+
+    def test_expired_pairing_code_is_ignored(self):
+        old = (config.now() - timedelta(minutes=11)).isoformat()
+        store.save("pairing", {"code": "Zq8-pairing-code", "at": old})
+        bot = FakeBot([text(5555, "/start Zq8-pairing-code", 8)])
+        daemon.step(bot, spawn=self.spawn, timeout=0)
+        self.assertEqual(store.load("owner", {}), {})
 
     def test_llm_actions_are_spawned(self):
         store.save("owner", {"chat_id": OWNER})

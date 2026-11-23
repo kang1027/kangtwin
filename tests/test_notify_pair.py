@@ -1,6 +1,7 @@
 import os
 import tempfile
 import unittest
+from datetime import datetime, timedelta
 from unittest import mock
 
 from kangtwin import notify, pair, store
@@ -60,10 +61,21 @@ class NotifyPairTest(unittest.TestCase):
             notify.send("[스카우트] A 2건\\n\\n- 외주 158835")
         self.assertEqual(sent, ["[스카우트] A 2건\n\n- 외주 158835"])
 
-    def test_issue_stores_six_digit_code(self):
+    def test_issue_stores_long_code(self):
         code = pair.issue()
-        self.assertRegex(code, r"^\d{6}$")
+        self.assertGreaterEqual(len(code), 16)
         self.assertEqual(store.load("pairing", {})["code"], code)
+        self.assertEqual(pair.current_code(), code)
+
+    def test_code_expires_after_ttl(self):
+        code = pair.issue()
+        at = datetime.fromisoformat(store.load("pairing", {})["at"])
+        self.assertEqual(pair.current_code(at + pair.TTL - timedelta(seconds=1)), code)
+        self.assertIsNone(pair.current_code(at + pair.TTL + timedelta(seconds=1)))
+
+    def test_no_code_without_time(self):
+        store.save("pairing", {"code": "abc"})
+        self.assertIsNone(pair.current_code())
 
 
 if __name__ == "__main__":
