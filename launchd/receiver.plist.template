@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>__LABEL__</string>
+  <!-- 데몬은 Kang Twin.app 아래에서 돈다. open -W는 앱이 끝날 때까지 기다리고, 끝나면 launchd가 다시 띄운다. -->
+  <key>ProgramArguments</key>
+  <array><string>/usr/bin/open</string><string>-W</string><string>-g</string><string>__HOME__/Applications/Kang Twin.app</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>30</integer>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/kang-twin/launchd.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/kang-twin/launchd.log</string>
+</dict>
+</plist>

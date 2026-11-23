@@ -1,0 +1,7 @@
+#!/bin/bash
+# Usage: kt <module> [args...]  → python3 -m kangtwin.<module> args...
+set -e
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MOD="$1"; shift
+cd "$REPO"
+exec /usr/bin/python3 -m "kangtwin.$MOD" "$@"

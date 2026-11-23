@@ -1,0 +1,10 @@
+{
+  "name": "한서윤",
+  "vault": "~/Documents/MyVault",
+  "me_dir": "Me",
+  "outputs_dir": "Outputs",
+  "utc_offset_hours": 9,
+  "jobs": ["interview", "contest-scout", "fund-scout"],
+  "home_regions": ["경기", "수도권"],
+  "egbiz_area": ""
+}

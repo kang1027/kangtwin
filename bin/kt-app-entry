@@ -1,0 +1,18 @@
+#!/bin/bash
+# Kang Twin.app이 실행하는 진입점. macOS는 백그라운드 CLI가 iCloud 안 Obsidian 볼트를
+# 읽지 못하게 막지만, 앱 아래에서 뜬 프로세스는 앱의 접근을 물려받는다.
+# 데몬이 끝나도 0으로 끝내서 앱이 오류 창을 띄우지 않게 하고, 재시작은 launchd에 맡긴다.
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+mkdir -p "$HOME/Library/Logs/kang-twin"
+cd "$REPO" || exit 0
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+# 시작하자마자 볼트를 한 번 읽어서, 처음 설치한 맥이면 권한 확인 창이 지금 뜨게 한다.
+# (반영하는 도중에 창이 떠서 데몬이 멈추는 것보다 낫다.)
+# 30초 안에 안 끝나면 넘어가서 데몬은 띄운다. 볼트 작업은 떼어 낸 작업에서만 하므로 데몬은 안 멈춘다.
+if /usr/bin/perl -e 'alarm 30; exec @ARGV' ls "$(/usr/bin/python3 -c 'from kangtwin import config; print(config.ME)')" > /dev/null 2>&1; then
+  echo "$(date '+%Y-%m-%d %H:%M:%S') 볼트 접근 확인: ok" >> "$HOME/Library/Logs/kang-twin/receiver.log"
+else
+  echo "$(date '+%Y-%m-%d %H:%M:%S') 볼트 접근 확인: 실패 또는 30초 초과" >> "$HOME/Library/Logs/kang-twin/receiver.log"
+fi
+/usr/bin/python3 -m kangtwin.daemon >> "$HOME/Library/Logs/kang-twin/receiver.log" 2>&1
+exit 0
